@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.2.1 (2026-10-17)
+
+Fixes from a fresh-install test run.
+- `--set-country XX` re-derives units and the radon level from the country, keeps rooms, quiet hours, and time zone, and drops custom thresholds (reported back). The skills say to use it instead of hand-editing.
+- Unnamed monitors are labeled by model plus last 4 of the serial (e.g. "View Plus 2519"), never a bare serial. Setup pushes harder to name rooms.
+- Setup asks units and quiet hours as separate turns, explains alerts on the first check, and dropped the "Test" step bots can't run.
+- Setup won't replace an existing `~/air-watch/config.json` without asking (bots on one box share the folder).
+- 2 new tests (11 total).
+
 ## v0.2.0 (2026-10-17)
 
 - Moved thresholds, unit conversion, stale data, cooldown, and the auth-failure counter into `script/airwatch.py` (Python 3 stdlib). Setup writes it from the skill; the routine runs it; the model only words alerts.
@@ -7,7 +16,7 @@
 - Optional quiet hours (default off): non-urgent alerts are held and delivered when quiet hours end; radon and offline alerts always go out.
 - Country-based radon levels and units with cited official sources (US, CA, UK, NO, SE, DE, EU, WHO fallback). Fixed units mismatch: US defaults to F and pCi/L, everyone else C and Bq/m3.
 - Added `tests/` with 9 fixture tests (normal, breach, cooldown repeat, worse, offline, auth twice, quiet hours, rate limit/API down, country presets).
-- Routine runs in the owner's local time zone and is Test-run at setup.
+- Routine runs in the owner's local time zone.
 - Trimmed reference links in the check skill to 4; the README keeps the full list.
 
 ## v0.1.0 (2026-10-17)

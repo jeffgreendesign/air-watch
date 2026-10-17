@@ -17,7 +17,7 @@ Exit codes and `status`:
 
 Diagnose: run with `--diagnose` and report `diagnose[]` in order (keys set/missing, token HTTP result, account count, each device's last-seen); stop at the first `ok: false` with one fix. No secrets appear in the output, so it is safe to paste into a public bug report. Diagnose does not change state.
 
-Config edits (rooms, thresholds, units, quiet hours) go in `~/air-watch/config.json`; thresholds are in the owner's display units.
+Config edits (rooms, thresholds, units, quiet hours) go in `~/air-watch/config.json`; thresholds are in the owner's display units. To change country, run `python3 ~/air-watch/airwatch.py --set-country XX`; never hand-edit units.
 Read-only; no approval needed. Not a CO or smoke alarm.
 
 Reference:

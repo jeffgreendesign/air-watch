@@ -10,14 +10,16 @@ Speak to the new owner, one question at a time, in their language. Target: under
 1. "I'm Air Watch. I read your Airthings monitors every 2 hours and message you only when something's out of range. Read-only: I never change settings. I'm not a CO or smoke alarm, and I depend on Airthings' third-party API."
 2. "Do you have an Airthings account with at least one monitor online?" If no, explain what's needed and stop.
 3. "In dashboard.airthings.com, open Integrations > API and create a client with scope read:device:current_values." Then secure secret request for `AIRTHINGS_CLIENT_ID`, then `AIRTHINGS_CLIENT_SECRET`. Never in chat. Confirm each is set with `[ -n "$AIRTHINGS_CLIENT_ID" ] && echo set` (never print values).
-4. "Which country are you in?" Map to a code: US, CA, GB, NO, SE, DE, or EU (other EU member state); anything else is "other". This sets the radon alert level (US 4 pCi/L = 148 Bq/m3; CA, GB, SE 200; NO 100, with 200 as Norway's upper limit; DE and EU 300; other 100 per WHO) and units (US: F and pCi/L; everyone else: C and Bq/m3). Offer to change units.
-5. "Quiet hours? During them I hold non-urgent alerts and send them when quiet hours end; radon and offline-device alerts still come through. Default: off." Also ask their time zone if the box clock isn't set to it (IANA name, e.g. Europe/Oslo).
-6. Write the script below to `~/air-watch/airwatch.py` exactly as given (`mkdir -p ~/air-watch`), then write `~/air-watch/config.json`:
+4. "Which country are you in?" Map to a code: US, CA, GB, NO, SE, DE, or EU (other EU member state); anything else is "other". This sets the radon alert level (US 4 pCi/L = 148 Bq/m3; CA, GB, SE 200; NO 100, with 200 as Norway's upper limit; DE and EU 300; other 100 per WHO) and units (US: F and pCi/L; everyone else: C and Bq/m3). Then, as its own question: "I'll show temperature in X and radon in Y. Keep those, or change?" Wait for the answer before step 5.
+5. Separate turn: "Quiet hours? During them I hold non-urgent alerts and send them when quiet hours end; radon and offline-device alerts still come through. Default: off." Also ask their time zone if the box clock isn't set to it (IANA name, e.g. Europe/Oslo).
+6. If `~/air-watch/config.json` already exists, stop: tell the owner an Air Watch install is already on this computer, show its country and rooms, and ask before replacing it. Other bots on the same box share this folder. Otherwise write the script below to `~/air-watch/airwatch.py` exactly as given (`mkdir -p ~/air-watch`), then write `~/air-watch/config.json`:
    `{"country": "NO", "units": {"temp": "C", "radon": "Bq/m3"}, "rooms": {}, "quiet_hours": null, "timezone": "Europe/Oslo"}`
    (quiet hours as `{"start": "22:00", "end": "07:00"}`, local time). Only add `thresholds` the owner changes, in their display units, as `[low, high]` with `null` for none.
-7. Run `python3 ~/air-watch/airwatch.py --diagnose`. Fix the first failed step. Then list each serial from `diagnose[]` and ask "Which room is each monitor in?"; save to `rooms` in config.json.
-8. Run `python3 ~/air-watch/airwatch.py` once and show the readings. An alert may fire right away if something is already out of range.
-9. Create routine `air-quality-out-of-range-alert`: schedule `0 */2 * * *` in the owner's local time zone, flexible timing; prompt: "Run the airthings-air-check skill. Send the owner only what it says to send; otherwise send nothing." Use Test once. Tell the owner the schedule, their time zone, and the next run time.
+7. Run `python3 ~/air-watch/airwatch.py --diagnose`. Fix the first failed step. Then list each monitor from `diagnose[]` (the script labels unnamed ones by model, e.g. "View Plus 2519") and ask "Which room is each monitor in? Alerts will use these names." If they skip, say once that alerts will show the model label instead, and ask again only if they want. Save names to `rooms` in config.json, keyed by full serial.
+8. Run `python3 ~/air-watch/airwatch.py` once and show the readings. If alerts fire now, say: "This is normal on a first check. Many homes run over on CO2 or VOCs, especially bedrooms with doors closed. Try the fix shown, and I'll only message again if it stays out of range after 12 hours or gets worse."
+9. Create routine `air-quality-out-of-range-alert`: schedule `0 */2 * * *` in the owner's local time zone, flexible timing; prompt: "Run the airthings-air-check skill. Send the owner only what it says to send; otherwise send nothing." Tell the owner the schedule, their time zone, and the next run time.
+
+Changing country later: never hand-edit units. Run `python3 ~/air-watch/airwatch.py --set-country XX` (codes above, or OTHER). It resets units and the radon level for that country, keeps rooms, quiet hours, and time zone, and drops custom thresholds because they were in the old units; tell the owner which ones were dropped (`dropped_thresholds`) and offer to re-add them.
 
 Script (write verbatim):
 
@@ -43,6 +45,10 @@ FIX = {"radon": "Retest with a long-term radon test; if confirmed, contact a cer
        "pm25": "Ventilate after the source stops, or run an air purifier.", "temp_hi": "Cool the room.",
        "temp_lo": "Warm the room.", "battery": "Replace the batteries.",
        "offline": "Check power, batteries, and hub or phone sync."}
+# Serial prefix -> model, used to label monitors the owner hasn't named.
+MODELS = {"2900": "Wave", "2920": "Wave Mini", "2930": "Wave Plus", "2950": "Wave Radon", "2960": "View Plus",
+          "2980": "View Pollution", "2989": "View Radon", "3210": "Wave Enhance", "3220": "Wave Enhance"}
+COUNTRIES = set(RADON) | {"OTHER"}
 
 class ApiError(Exception):
     def __init__(self, code, status):
@@ -89,8 +95,25 @@ def in_quiet(cfg, now):
     s, e = q["start"], q["end"]
     return (s <= hm < e) if s < e else (hm >= s or hm < e)
 
+def label(dev, cfg):
+    """Owner's room name, else model plus last 4 of serial (e.g. "View Plus 2519"), never a bare serial."""
+    sn = str(dev["serialNumber"])
+    if cfg.get("rooms", {}).get(sn): return cfg["rooms"][sn]
+    model = dev.get("name") or dev.get("productName") or MODELS.get(sn[:4]) or "Monitor"
+    return f"{model} {sn[-4:]}"
+
+def set_country(cfg, code):
+    """Re-derive units from country; drop unit overrides and thresholds (they were in old units). Keeps rooms, quiet hours, time zone."""
+    code = code.upper()
+    if code not in COUNTRIES: raise ValueError(f"unknown country {code}; use one of {sorted(COUNTRIES)}")
+    new = {k: v for k, v in cfg.items() if k not in ("units", "thresholds")}
+    new["country"] = code
+    us = code == "US"
+    new["units"] = {"temp": "F" if us else "C", "radon": "pCi/L" if us else "Bq/m3"}
+    return new
+
 def breaches(dev, cfg, units, thr, now):
-    room = cfg.get("rooms", {}).get(dev["serialNumber"], dev["serialNumber"])
+    room = label(dev, cfg)
     rec = datetime.fromisoformat(dev["recorded"]).replace(tzinfo=timezone.utc) if dev.get("recorded") else None
     stale = cfg.get("stale_hours", 3)
     if rec is None or now - rec > timedelta(hours=stale):
@@ -172,7 +195,17 @@ def run(cfg, state, now, diagnose=False):
 
 def main(argv):
     diagnose = "--diagnose" in argv
-    cfg = json.load(open(os.path.join(HOME, "config.json")))
+    cp = os.path.join(HOME, "config.json")
+    cfg = json.load(open(cp))
+    if "--set-country" in argv:
+        i = argv.index("--set-country")
+        try: new = set_country(cfg, argv[i + 1] if i + 1 < len(argv) else "")
+        except ValueError as e: print(json.dumps({"status": "error", "detail": str(e)})); return 1
+        json.dump(new, open(cp, "w"), indent=1)
+        u, t = defaults(new)
+        print(json.dumps({"status": "ok", "country": new["country"], "units": u, "radon_alert": t["radon"][1],
+                          "dropped_thresholds": cfg.get("thresholds", {})}, indent=1))
+        return 0
     sp = os.path.join(HOME, "state.json")
     state = json.load(open(sp)) if os.path.exists(sp) else {}
     res, code = run(cfg, state, datetime.now(timezone.utc), diagnose)

@@ -19,6 +19,10 @@ FIX = {"radon": "Retest with a long-term radon test; if confirmed, contact a cer
        "pm25": "Ventilate after the source stops, or run an air purifier.", "temp_hi": "Cool the room.",
        "temp_lo": "Warm the room.", "battery": "Replace the batteries.",
        "offline": "Check power, batteries, and hub or phone sync."}
+# Serial prefix -> model, used to label monitors the owner hasn't named.
+MODELS = {"2900": "Wave", "2920": "Wave Mini", "2930": "Wave Plus", "2950": "Wave Radon", "2960": "View Plus",
+          "2980": "View Pollution", "2989": "View Radon", "3210": "Wave Enhance", "3220": "Wave Enhance"}
+COUNTRIES = set(RADON) | {"OTHER"}
 
 class ApiError(Exception):
     def __init__(self, code, status):
@@ -65,8 +69,25 @@ def in_quiet(cfg, now):
     s, e = q["start"], q["end"]
     return (s <= hm < e) if s < e else (hm >= s or hm < e)
 
+def label(dev, cfg):
+    """Owner's room name, else model plus last 4 of serial (e.g. "View Plus 2519"), never a bare serial."""
+    sn = str(dev["serialNumber"])
+    if cfg.get("rooms", {}).get(sn): return cfg["rooms"][sn]
+    model = dev.get("name") or dev.get("productName") or MODELS.get(sn[:4]) or "Monitor"
+    return f"{model} {sn[-4:]}"
+
+def set_country(cfg, code):
+    """Re-derive units from country; drop unit overrides and thresholds (they were in old units). Keeps rooms, quiet hours, time zone."""
+    code = code.upper()
+    if code not in COUNTRIES: raise ValueError(f"unknown country {code}; use one of {sorted(COUNTRIES)}")
+    new = {k: v for k, v in cfg.items() if k not in ("units", "thresholds")}
+    new["country"] = code
+    us = code == "US"
+    new["units"] = {"temp": "F" if us else "C", "radon": "pCi/L" if us else "Bq/m3"}
+    return new
+
 def breaches(dev, cfg, units, thr, now):
-    room = cfg.get("rooms", {}).get(dev["serialNumber"], dev["serialNumber"])
+    room = label(dev, cfg)
     rec = datetime.fromisoformat(dev["recorded"]).replace(tzinfo=timezone.utc) if dev.get("recorded") else None
     stale = cfg.get("stale_hours", 3)
     if rec is None or now - rec > timedelta(hours=stale):
@@ -148,7 +169,17 @@ def run(cfg, state, now, diagnose=False):
 
 def main(argv):
     diagnose = "--diagnose" in argv
-    cfg = json.load(open(os.path.join(HOME, "config.json")))
+    cp = os.path.join(HOME, "config.json")
+    cfg = json.load(open(cp))
+    if "--set-country" in argv:
+        i = argv.index("--set-country")
+        try: new = set_country(cfg, argv[i + 1] if i + 1 < len(argv) else "")
+        except ValueError as e: print(json.dumps({"status": "error", "detail": str(e)})); return 1
+        json.dump(new, open(cp, "w"), indent=1)
+        u, t = defaults(new)
+        print(json.dumps({"status": "ok", "country": new["country"], "units": u, "radon_alert": t["radon"][1],
+                          "dropped_thresholds": cfg.get("thresholds", {})}, indent=1))
+        return 0
     sp = os.path.join(HOME, "state.json")
     state = json.load(open(sp)) if os.path.exists(sp) else {}
     res, code = run(cfg, state, datetime.now(timezone.utc), diagnose)

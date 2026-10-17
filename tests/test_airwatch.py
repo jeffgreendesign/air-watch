@@ -99,5 +99,24 @@ class T(unittest.TestCase):
             self.assertEqual((u["temp"], u["radon"], t["radon"][1]), ("C", "Bq/m3", v))
         self.assertEqual(airwatch.defaults({"country": "US"})[1]["radon"][1], 4.0)
 
+    def test_unnamed_monitor_label(self):
+        self.assertEqual(airwatch.label({"serialNumber": "2960122519"}, {}), "View Plus 2519")
+        self.assertEqual(airwatch.label({"serialNumber": "9999000011"}, {"rooms": {}}), "Monitor 0011")
+        self.assertEqual(airwatch.label({"serialNumber": "1000000001"}, CFG), "Bedroom")
+        res, _ = self.go("breach", cfg={"country": "US"})
+        self.assertTrue(res["alerts"] and all(not a["room"].isdigit() for a in res["alerts"]))
+
+    def test_set_country(self):
+        cfg = {"country": "US", "units": {"temp": "F", "radon": "pCi/L"}, "rooms": {"1": "Den"},
+               "quiet_hours": {"start": "22:00", "end": "07:00"}, "timezone": "America/New_York",
+               "thresholds": {"temp": [60, 80]}}
+        new = airwatch.set_country(cfg, "no")
+        self.assertEqual((new["country"], new["units"]), ("NO", {"temp": "C", "radon": "Bq/m3"}))
+        self.assertEqual((new["rooms"], new["quiet_hours"], new["timezone"]), (cfg["rooms"], cfg["quiet_hours"], cfg["timezone"]))
+        self.assertNotIn("thresholds", new)
+        self.assertEqual(airwatch.defaults(new)[1]["radon"][1], 100)
+        self.assertEqual(airwatch.set_country(new, "US")["units"], {"temp": "F", "radon": "pCi/L"})
+        with self.assertRaises(ValueError): airwatch.set_country(cfg, "XX")
+
 if __name__ == "__main__":
     unittest.main()

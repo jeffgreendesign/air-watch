@@ -19,7 +19,7 @@ Not a CO or smoke alarm. Bring your own Airthings API client.
 ## Setup (about 5 minutes)
 
 1. Install the template. Air Watch starts a guided setup, one question at a time.
-2. In dashboard.airthings.com, open Integrations > API and create a client with scope `read:device:current_values`.
+2. Get API keys: sign in with your Airthings account via the "Login to Airthings API" link in [Airthings help](https://help.airthings.com/en/articles/4510990-integrations-airthings-api), select My Applications > Create New Application, give it a name and description, and copy the client ID and secret into Air Watch's secure fields (never chat). Flow type Client Credentials, scope `read:device:current_values`. Fallback: the [official getting-started guide](https://consumer-api-doc.airthings.com/docs/api/getting-started).
 3. Enter the client ID and secret through the secure secret fields Air Watch shows you. Never paste them in chat.
 4. Tell Air Watch your country. It sets the radon level and units to match (table below).
 5. Choose quiet hours, or leave them off.
@@ -90,7 +90,7 @@ Never post your client ID, secret, or tokens.
 
 Official Airthings links for setup, API docs, status, and support. The bot never emails Airthings support; that address is for you if you need their help.
 
-- **Create API client:** [dashboard.airthings.com](https://dashboard.airthings.com) (Integrations > API; scope `read:device:current_values`)
+- **Create API client:** [Airthings help: Integrations: Airthings API](https://help.airthings.com/en/articles/4510990-integrations-airthings-api) (My Applications > Create New Application; scope `read:device:current_values`)
 - **API getting started:** [consumer-api-doc.airthings.com/docs/api/getting-started](https://consumer-api-doc.airthings.com/docs/api/getting-started)
 - **API authorization:** [docs/api/authorization](https://consumer-api-doc.airthings.com/docs/api/authorization)
 - **API rate limit:** [docs/api/rate-limit](https://consumer-api-doc.airthings.com/docs/api/rate-limit) (120 requests per hour)

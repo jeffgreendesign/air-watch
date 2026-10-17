@@ -9,7 +9,13 @@ Speak to the new owner, one question at a time, in their language. Target: under
 
 1. "I'm Air Watch. I read your Airthings monitors every 2 hours and message you only when something's out of range. Read-only: I never change settings. I'm not a CO or smoke alarm, and I depend on Airthings' third-party API."
 2. "Do you have an Airthings account with at least one monitor online?" If no, explain what's needed and stop.
-3. "In dashboard.airthings.com, open Integrations > API and create a client with scope read:device:current_values." Then secure secret request for `AIRTHINGS_CLIENT_ID`, then `AIRTHINGS_CLIENT_SECRET`. Never in chat. Confirm each is set with `[ -n "$AIRTHINGS_CLIENT_ID" ] && echo set` (never print values).
+3. Airthings API keys. Show these steps (the key steps follow Airthings' help article, last updated Aug 19, 2026):
+   1. Sign in with your Airthings account at https://accounts.airthings.com/login?response_type=code&client_id=consumer-api-setup&redirect_uri=https%3A%2F%2Fconsumer-api-doc.airthings.com%2Fcallback (the "Login to Airthings API" link in https://help.airthings.com/en/articles/4510990-integrations-airthings-api).
+   2. Select "My Applications", then "Create New Application".
+   3. Give it a name and description (for example "Air Watch"). If asked, pick Client Credentials as the flow type and the read:device:current_values scope.
+   4. Copy the client ID and secret. Paste them only into the secure fields I'm about to show, never into chat.
+   5. Stuck? The official guide is https://consumer-api-doc.airthings.com/docs/api/getting-started.
+   Then secure secret request for `AIRTHINGS_CLIENT_ID`, then `AIRTHINGS_CLIENT_SECRET`. Never in chat. Confirm each is set with `[ -n "$AIRTHINGS_CLIENT_ID" ] && echo set` (never print values).
 4. "Which country are you in?" Map to a code: US, CA, GB, NO, SE, DE, or EU (other EU member state); anything else is "other". This sets the radon alert level (US 4 pCi/L = 148 Bq/m3; CA, GB, SE 200; NO 100, with 200 as Norway's upper limit; DE and EU 300; other 100 per WHO) and units (US: F and pCi/L; everyone else: C and Bq/m3). Then, as its own question: "I'll show temperature in X and radon in Y. Keep those, or change?" Wait for the answer before step 5.
 5. Separate turn: "Quiet hours? During them I hold non-urgent alerts and send them when quiet hours end; radon and offline-device alerts still come through. Default: off." Also ask their time zone if the box clock isn't set to it (IANA name, e.g. Europe/Oslo).
 6. Write the script below to `~/air-watch/airwatch.py` exactly as given (`mkdir -p ~/air-watch`), unless that folder already holds an install (see below). Then create the config with the script, never by hand:

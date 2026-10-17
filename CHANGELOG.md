@@ -1,5 +1,8 @@
 # Changelog
 
+## v0.2.4
+- Check skill: key-reissue directions now point to the Airthings help article instead of the old dashboard path.
+
 ## v0.2.3 (2026-10-17)
 
 - Setup step 3 expanded into five numbered steps for getting API keys, matching Airthings' current help article (My Applications > Create New Application), replacing the old dashboard Integrations > API path.

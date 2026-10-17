@@ -1,40 +1,27 @@
 ---
 name: airthings-air-check
 description: >-
-  Use when Air Watch's alert routine fires or the owner asks how the air is:
-  read Airthings monitors (read-only) and return out-of-range rooms.
+  Use when Air Watch's alert routine fires, the owner asks how the air is, or
+  the owner says "diagnose": run the local Airthings check script (read-only)
+  and word its results.
 ---
-Needs: env `AIRTHINGS_CLIENT_ID`, `AIRTHINGS_CLIENT_SECRET`; memory rooms + thresholds.
+Needs: env `AIRTHINGS_CLIENT_ID`, `AIRTHINGS_CLIENT_SECRET`; `~/air-watch/airwatch.py` and `~/air-watch/config.json` (written by air-watch-getting-started). If either file is missing, rerun setup steps 6-7; never improvise the math.
 
-1. Token: POST `https://accounts-api.airthings.com/v1/token` (grant_type client_credentials, scope `read:device:current_values`). Keep it in a shell variable only; `curl -s`, never `-v`, never print it.
-2. GET `https://consumer-api.airthings.com/v1/accounts`, then `/v1/accounts/{id}/sensors` (and `/devices` for names). One pass per check; stay under 120 req/hr.
-3. Map serial to room from memory (unknown: use the device name). Convert units (API temp is C).
-4. Compare to thresholds. Data older than the stale limit is a stale breach; skip its other metrics. Never invent values.
-5. Cooldown in `~/air-watch/state.json` (keys `room|metric`: last alert time + value; no secrets). Report a breach if new, worse than last alert, or past 12h. Clear keys back in range.
+Run: `python3 ~/air-watch/airwatch.py` (add `--diagnose` for diagnose). The script does all fetching, unit conversion, thresholds, staleness, cooldown, "worse", quiet hours, and the auth-fail counter, and prints JSON. Do not recompute or second-guess it; never print or echo the keys.
 
-Output: breaches (room, metric, value+unit, threshold, one next step). Empty in a routine means send nothing; for a manual ask, one-line all-clear with check time.
-Errors: 401/403 is an auth failure (twice in a row: pause the routine, ask owner to reissue). 429: back off; mention only if repeated. On auth or API failures, also check [status.airthings.com/en](https://status.airthings.com/en) before blaming local setup.
+Exit codes and `status`:
+- 0 `ok`: for each item in `alerts[]`, send one short line: room, metric, value + unit, threshold, `fix`. Note `held_since` (held during quiet hours) or `resolved: true` (held, now back in range). Empty `alerts[]` in a routine: send nothing. Manual ask: one-line summary of `readings` with `checked_at` in the owner's local time.
+- 2 `auth_error`: say nothing on the first one. `pause_and_ask`: pause the alert routine and ask the owner to reissue the client in dashboard.airthings.com and re-enter both keys through secure secret requests.
+- 3 `rate_limited`: send nothing; mention only if it repeats on 3 runs.
+- 4 `api_down`: check the status page below; mention only if it repeats on 3 runs.
+
+Diagnose: run with `--diagnose` and report `diagnose[]` in order (keys set/missing, token HTTP result, account count, each device's last-seen); stop at the first `ok: false` with one fix. No secrets appear in the output, so it is safe to paste into a public bug report. Diagnose does not change state.
+
+Config edits (rooms, thresholds, units, quiet hours) go in `~/air-watch/config.json`; thresholds are in the owner's display units.
 Read-only; no approval needed. Not a CO or smoke alarm.
 
-## Diagnose
-When the owner says "diagnose": run these checks in order, stop at the first failure, and report it in plain words with a fix. Mask secrets (show only "set" or "missing", never values, tokens, or headers).
-1. Keys present: `AIRTHINGS_CLIENT_ID` and `AIRTHINGS_CLIENT_SECRET` are non-empty. Fail: re-enter through the secure secret request.
-2. Token: the token request returns HTTP 200 with an access token. Report only the HTTP code. 401/403: reissue the client in dashboard.airthings.com. If token or later API calls fail, also tell the owner to check [status.airthings.com/en](https://status.airthings.com/en).
-3. Account: `/v1/accounts` returns at least one account. Fail: check the client belongs to the account that owns the monitors.
-4. Devices: for each device, last-seen time from `/v1/accounts/{id}/sensors`. Flag any older than the stale limit as offline (check power, batteries, hub or phone sync).
-All pass: one line per device with last-seen time, then "Diagnose: OK". Output is safe to paste into a public bug report.
-
-## Reference links
-- API getting started: https://consumer-api-doc.airthings.com/docs/api/getting-started
-- API authorization: https://consumer-api-doc.airthings.com/docs/api/authorization
-- API rate limit: https://consumer-api-doc.airthings.com/docs/api/rate-limit
-- API reference: https://consumer-api-doc.airthings.com/api-docs
-- Dashboard (create client): https://dashboard.airthings.com
-- Code examples: https://github.com/airthings
+Reference:
+- API docs: https://consumer-api-doc.airthings.com/docs/api/getting-started
+- Create or reissue client: https://dashboard.airthings.com (Integrations > API)
 - Status page: https://status.airthings.com/en
-- Help center: https://help.airthings.com/en/
-- App: https://www.airthings.com/app
-- Home: https://www.airthings.com/
-- Privacy notice: https://www.airthings.com/legal/privacy-notice
-- Terms of use: https://www.airthings.com/legal/terms-of-use
-- Support email (owner-facing only; never email it yourself): support@airthings.com
+- Support (owner-facing only; never email it yourself): support@airthings.com

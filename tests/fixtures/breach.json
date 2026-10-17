@@ -1,0 +1,63 @@
+{
+ "results": [
+  {
+   "serialNumber": "1000000001",
+   "sensors": [
+    {
+     "sensorType": "co2",
+     "value": 1100,
+     "unit": "ppm"
+    },
+    {
+     "sensorType": "humidity",
+     "value": 45.0,
+     "unit": "pct"
+    },
+    {
+     "sensorType": "temp",
+     "value": 21.0,
+     "unit": "c"
+    },
+    {
+     "sensorType": "voc",
+     "value": 100.0,
+     "unit": "ppb"
+    },
+    {
+     "sensorType": "radonShortTermAvg",
+     "value": 20.0,
+     "unit": "bq"
+    }
+   ],
+   "recorded": "2026-01-15T11:50:00",
+   "batteryPercentage": 80
+  },
+  {
+   "serialNumber": "1000000002",
+   "sensors": [
+    {
+     "sensorType": "co2",
+     "value": 700,
+     "unit": "ppm"
+    },
+    {
+     "sensorType": "humidity",
+     "value": 45.0,
+     "unit": "pct"
+    },
+    {
+     "sensorType": "temp",
+     "value": 21.0,
+     "unit": "c"
+    },
+    {
+     "sensorType": "voc",
+     "value": 100.0,
+     "unit": "ppb"
+    }
+   ],
+   "recorded": "2026-01-15T11:50:00",
+   "batteryPercentage": 80
+  }
+ ]
+}

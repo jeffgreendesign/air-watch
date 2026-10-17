@@ -1,7 +1,9 @@
 # Routine: air-quality-out-of-range-alert
 
-Schedule: `0 */2 * * *` (every 2 hours, flexible timing). Created during setup step 7.
+Schedule: `0 */2 * * *` (every 2 hours, flexible timing), in the owner's local time zone. Created in setup step 9, then run once with Test.
 
 Prompt:
 
-> Run the airthings-air-check skill. If it returns breaches, send the owner one short alert with room, metric, value, threshold, and one next step. If nothing is new or worse, or still in its 12h cooldown, send nothing. If auth fails twice in a row, pause this routine and ask the owner to reissue the Airthings client. Result goes only to the owner in this chat.
+> Run the airthings-air-check skill. Send the owner only what it says to send; otherwise send nothing.
+
+All decisions (thresholds, units, 12h cooldown, "worse" = at least 10% of the threshold further past it on the same side, quiet hours, stale data, auth-fail counter) are made by `~/air-watch/airwatch.py`. The model only words the alerts. Two auth failures in a row return `pause_and_ask`: pause this routine and ask the owner to reissue the Airthings client. Results go only to the owner in this chat.

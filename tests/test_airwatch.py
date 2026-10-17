@@ -118,5 +118,37 @@ class T(unittest.TestCase):
         self.assertEqual(airwatch.set_country(new, "US")["units"], {"temp": "F", "radon": "pCi/L"})
         with self.assertRaises(ValueError): airwatch.set_country(cfg, "XX")
 
+    def _home(self):
+        import tempfile, contextlib, io
+        d = tempfile.mkdtemp(); self._old = airwatch.HOME; airwatch.HOME = d
+        self.addCleanup(setattr, airwatch, "HOME", self._old)
+        def run(*a):
+            buf = io.StringIO()
+            with contextlib.redirect_stdout(buf): code = airwatch.main(list(a))
+            return code, buf.getvalue()
+        return d, run
+
+    def test_init_refuses_overwrite_without_force(self):
+        d, run = self._home()
+        self.assertEqual(run("--init", '{"country": "US"}')[0], 0)
+        code, out = run("--init", '{"country": "NO"}')
+        self.assertEqual(code, 1); self.assertIn("refusing", out)
+        self.assertEqual(json.load(open(os.path.join(d, "config.json")))["country"], "US")
+        self.assertEqual(run("--init", '{"country": "NO"}', "--force")[0], 0)
+        self.assertEqual(json.load(open(os.path.join(d, "config.json")))["country"], "NO")
+
+    def test_init_rejects_bad_config(self):
+        d, run = self._home()
+        self.assertEqual(run("--init", "not json")[0], 1)
+        self.assertEqual(run("--init", '{"country": "XX"}')[0], 1)
+        self.assertFalse(os.path.exists(os.path.join(d, "config.json")))
+
+    def test_missing_config_clean_exit(self):
+        d, run = self._home()
+        code, out = run()
+        self.assertEqual(code, 1); self.assertEqual(len(out.strip().splitlines()), 1)
+        self.assertIn("No Air Watch config", out)
+        self.assertEqual(run("--set-country", "NO")[0], 1)
+
 if __name__ == "__main__":
     unittest.main()

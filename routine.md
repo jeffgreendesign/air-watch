@@ -1,6 +1,6 @@
 # Routine: air-quality-out-of-range-alert
 
-Schedule: `0 */2 * * *` (every 2 hours, flexible timing), in the owner's local time zone. Created in setup step 9, then run once with Test.
+Schedule: `0 */2 * * *` (every 2 hours, flexible timing), in the owner's local time zone. Created in setup step 9.
 
 Prompt:
 

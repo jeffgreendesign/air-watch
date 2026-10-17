@@ -12,9 +12,9 @@ Speak to the new owner, one question at a time, in their language. Target: under
 3. "In dashboard.airthings.com, open Integrations > API and create a client with scope read:device:current_values." Then secure secret request for `AIRTHINGS_CLIENT_ID`, then `AIRTHINGS_CLIENT_SECRET`. Never in chat. Confirm each is set with `[ -n "$AIRTHINGS_CLIENT_ID" ] && echo set` (never print values).
 4. "Which country are you in?" Map to a code: US, CA, GB, NO, SE, DE, or EU (other EU member state); anything else is "other". This sets the radon alert level (US 4 pCi/L = 148 Bq/m3; CA, GB, SE 200; NO 100, with 200 as Norway's upper limit; DE and EU 300; other 100 per WHO) and units (US: F and pCi/L; everyone else: C and Bq/m3). Then, as its own question: "I'll show temperature in X and radon in Y. Keep those, or change?" Wait for the answer before step 5.
 5. Separate turn: "Quiet hours? During them I hold non-urgent alerts and send them when quiet hours end; radon and offline-device alerts still come through. Default: off." Also ask their time zone if the box clock isn't set to it (IANA name, e.g. Europe/Oslo).
-6. If `~/air-watch/config.json` already exists, stop: tell the owner an Air Watch install is already on this computer, show its country and rooms, and ask before replacing it. Other bots on the same box share this folder. Otherwise write the script below to `~/air-watch/airwatch.py` exactly as given (`mkdir -p ~/air-watch`), then write `~/air-watch/config.json`:
-   `{"country": "NO", "units": {"temp": "C", "radon": "Bq/m3"}, "rooms": {}, "quiet_hours": null, "timezone": "Europe/Oslo"}`
-   (quiet hours as `{"start": "22:00", "end": "07:00"}`, local time). Only add `thresholds` the owner changes, in their display units, as `[low, high]` with `null` for none.
+6. Write the script below to `~/air-watch/airwatch.py` exactly as given (`mkdir -p ~/air-watch`), unless that folder already holds an install (see below). Then create the config with the script, never by hand:
+   `python3 ~/air-watch/airwatch.py --init '{"country": "NO", "units": {"temp": "C", "radon": "Bq/m3"}, "rooms": {}, "quiet_hours": null, "timezone": "Europe/Oslo"}'`
+   (quiet hours as `{"start": "22:00", "end": "07:00"}`, local time). Only add `thresholds` the owner changes, in their display units, as `[low, high]` with `null` for none. If `--init` says Air Watch is already set up, stop: other bots on this computer share `~/air-watch`. Don't overwrite the script either; show the owner the existing config's country and rooms and ask. Use `--force` only after they explicitly say to replace it.
 7. Run `python3 ~/air-watch/airwatch.py --diagnose`. Fix the first failed step. Then list each monitor from `diagnose[]` (the script labels unnamed ones by model, e.g. "View Plus 2519") and ask "Which room is each monitor in? Alerts will use these names." If they skip, say once that alerts will show the model label instead, and ask again only if they want. Save names to `rooms` in config.json, keyed by full serial.
 8. Run `python3 ~/air-watch/airwatch.py` once and show the readings. If alerts fire now, say: "This is normal on a first check. Many homes run over on CO2 or VOCs, especially bedrooms with doors closed. Try the fix shown, and I'll only message again if it stays out of range after 12 hours or gets worse."
 9. Create routine `air-quality-out-of-range-alert`: schedule `0 */2 * * *` in the owner's local time zone, flexible timing; prompt: "Run the airthings-air-check skill. Send the owner only what it says to send; otherwise send nothing." Tell the owner the schedule, their time zone, and the next run time.
@@ -26,7 +26,8 @@ Script (write verbatim):
 ```python
 #!/usr/bin/env python3
 """Air Watch check: read Airthings monitors, compare to thresholds, print JSON. Stdlib only.
-Exit: 0 ok, 2 auth, 3 rate limit, 4 API down. Keys come from env and are never printed."""
+Exit: 0 ok, 1 usage/config error, 2 auth, 3 rate limit, 4 API down. Keys come from env and are never printed.
+Setup: --init '<config json>' writes config.json and refuses to replace an existing one unless --force is given."""
 import json, os, sys, urllib.request, urllib.parse, urllib.error
 from datetime import datetime, timedelta, timezone
 try:
@@ -196,7 +197,24 @@ def run(cfg, state, now, diagnose=False):
 def main(argv):
     diagnose = "--diagnose" in argv
     cp = os.path.join(HOME, "config.json")
-    cfg = json.load(open(cp))
+    if "--init" in argv:
+        i = argv.index("--init")
+        if os.path.exists(cp) and "--force" not in argv:
+            print(f"Air Watch is already set up at {cp}; refusing to replace it (pass --force to overwrite).")
+            return 1
+        try:
+            new = json.loads(argv[i + 1]) if i + 1 < len(argv) else None
+            if not isinstance(new, dict) or str(new.get("country", "")).upper() not in COUNTRIES: raise ValueError
+        except ValueError:
+            print(f"--init needs a JSON object with a country from {sorted(COUNTRIES)}."); return 1
+        os.makedirs(HOME, exist_ok=True)
+        json.dump(new, open(cp, "w"), indent=1)
+        print(json.dumps({"status": "ok", "written": cp})); return 0
+    if not os.path.exists(cp):
+        print(f"No Air Watch config at {cp}; run setup (air-watch-getting-started) first."); return 1
+    try: cfg = json.load(open(cp))
+    except ValueError:
+        print(f"Air Watch config at {cp} is not valid JSON; fix it or rerun setup."); return 1
     if "--set-country" in argv:
         i = argv.index("--set-country")
         try: new = set_country(cfg, argv[i + 1] if i + 1 < len(argv) else "")

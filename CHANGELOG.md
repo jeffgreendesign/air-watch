@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.2.2 (2026-10-17)
+
+Fixes from the second review round.
+- The script enforces the overwrite guard: `--init '<json>'` creates config.json and refuses to replace an existing one unless `--force` is passed. Setup now writes the config only through `--init`. `--set-country` still edits in place.
+- A missing or invalid config.json prints a one-line message and exits 1 instead of a traceback.
+- Removed the stale "run once with Test" line from routine.md.
+- 3 new tests (14 total).
+
 ## v0.2.1 (2026-10-17)
 
 Fixes from a fresh-install test run.

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Air Watch check: read Airthings monitors, compare to thresholds, print JSON. Stdlib only.
-Exit: 0 ok, 2 auth, 3 rate limit, 4 API down. Keys come from env and are never printed."""
+Exit: 0 ok, 1 usage/config error, 2 auth, 3 rate limit, 4 API down. Keys come from env and are never printed.
+Setup: --init '<config json>' writes config.json and refuses to replace an existing one unless --force is given."""
 import json, os, sys, urllib.request, urllib.parse, urllib.error
 from datetime import datetime, timedelta, timezone
 try:
@@ -170,7 +171,24 @@ def run(cfg, state, now, diagnose=False):
 def main(argv):
     diagnose = "--diagnose" in argv
     cp = os.path.join(HOME, "config.json")
-    cfg = json.load(open(cp))
+    if "--init" in argv:
+        i = argv.index("--init")
+        if os.path.exists(cp) and "--force" not in argv:
+            print(f"Air Watch is already set up at {cp}; refusing to replace it (pass --force to overwrite).")
+            return 1
+        try:
+            new = json.loads(argv[i + 1]) if i + 1 < len(argv) else None
+            if not isinstance(new, dict) or str(new.get("country", "")).upper() not in COUNTRIES: raise ValueError
+        except ValueError:
+            print(f"--init needs a JSON object with a country from {sorted(COUNTRIES)}."); return 1
+        os.makedirs(HOME, exist_ok=True)
+        json.dump(new, open(cp, "w"), indent=1)
+        print(json.dumps({"status": "ok", "written": cp})); return 0
+    if not os.path.exists(cp):
+        print(f"No Air Watch config at {cp}; run setup (air-watch-getting-started) first."); return 1
+    try: cfg = json.load(open(cp))
+    except ValueError:
+        print(f"Air Watch config at {cp} is not valid JSON; fix it or rerun setup."); return 1
     if "--set-country" in argv:
         i = argv.index("--set-country")
         try: new = set_country(cfg, argv[i + 1] if i + 1 < len(argv) else "")

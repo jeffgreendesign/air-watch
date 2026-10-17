@@ -2,7 +2,7 @@
 
 Grok Bot template. Read-only watchdog for Airthings monitors. Checks radon, CO2, humidity, VOCs, PM2.5, temperature, battery, and stale data every 2 hours, and messages you only when a room is out of range.
 
-**Add to Grok Bot:** TBD (install link coming)
+**Add to Grok Bot:** [Install Air Watch](https://x.ai/bot/XKZd7x1GsSLCYpU1XZc_o)
 
 Not a CO or smoke alarm. Bring your own Airthings API client.
 

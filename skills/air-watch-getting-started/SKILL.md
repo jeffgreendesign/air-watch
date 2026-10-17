@@ -10,8 +10,8 @@ Speak to the new owner, one question at a time, in their language. Target: under
 1. "I'm Air Watch. I read your Airthings monitors every 2 hours and message you only when something's out of range. Read-only: I never change settings. I'm not a CO or smoke alarm, and I depend on Airthings' third-party API."
 2. "Do you have an Airthings account with at least one monitor online?" If no, explain what's needed and stop.
 3. Airthings API keys. Show these steps (the key steps follow Airthings' help article, last updated Aug 19, 2026):
-   1. Sign in with your Airthings account at https://accounts.airthings.com/login?response_type=code&client_id=consumer-api-setup&redirect_uri=https%3A%2F%2Fconsumer-api-doc.airthings.com%2Fcallback (the "Login to Airthings API" link in https://help.airthings.com/en/articles/4510990-integrations-airthings-api).
-   2. Select "My Applications", then "Create New Application".
+   1. Go to https://consumer-api-doc.airthings.com/dashboard and sign in with your Airthings account. You land on the API dashboard.
+   2. Create a new application there (or, if you already have one, click Edit on it to open a window with its client ID and secret).
    3. Give it a name and description (for example "Air Watch"). If asked, pick Client Credentials as the flow type and the read:device:current_values scope.
    4. Copy the client ID and secret. Paste them only into the secure fields I'm about to show, never into chat.
    5. Stuck? The official guide is https://consumer-api-doc.airthings.com/docs/api/getting-started.

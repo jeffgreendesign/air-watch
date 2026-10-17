@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.2.5 (2026-10-17)
+
+- API key directions (setup skill, check skill, README) now point to the Airthings API dashboard (consumer-api-doc.airthings.com/dashboard): sign in, create an application or click Edit on an existing one to copy the client ID and secret.
+- Verified every external link in the repo; all resolve to the expected pages.
+
 ## v0.2.4
 - Check skill: key-reissue directions now point to the Airthings help article instead of the old dashboard path.
 

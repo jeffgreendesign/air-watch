@@ -62,6 +62,25 @@ Never post your client ID, secret, or tokens.
 - Template copies are independent. The author gets no usage data or error reports unless you file an issue.
 - Only tested with a small set of Airthings models so far.
 
+## Airthings resources
+
+Official Airthings links for setup, API docs, status, and support. The bot never emails Airthings support; that address is for you if you need their help.
+
+- **Create API client:** [dashboard.airthings.com](https://dashboard.airthings.com) (Integrations > API; scope `read:device:current_values`)
+- **API getting started:** [consumer-api-doc.airthings.com/docs/api/getting-started](https://consumer-api-doc.airthings.com/docs/api/getting-started)
+- **API authorization:** [docs/api/authorization](https://consumer-api-doc.airthings.com/docs/api/authorization)
+- **API rate limit:** [docs/api/rate-limit](https://consumer-api-doc.airthings.com/docs/api/rate-limit) (120 requests per hour)
+- **API reference (OpenAPI):** [api-docs](https://consumer-api-doc.airthings.com/api-docs)
+- **Postman setup:** [docs/api/postman-setup](https://consumer-api-doc.airthings.com/docs/api/postman-setup)
+- **Code examples:** [github.com/airthings](https://github.com/airthings) ([org repositories](https://github.com/orgs/Airthings/repositories))
+- **Status page:** [status.airthings.com/en](https://status.airthings.com/en) (check this when auth or API calls fail)
+- **Help center:** [help.airthings.com/en](https://help.airthings.com/en/)
+- **Airthings app:** [airthings.com/app](https://www.airthings.com/app)
+- **Airthings home:** [airthings.com](https://www.airthings.com/)
+- **Privacy notice:** [airthings.com/legal/privacy-notice](https://www.airthings.com/legal/privacy-notice)
+- **Terms of use:** [airthings.com/legal/terms-of-use](https://www.airthings.com/legal/terms-of-use)
+- **Airthings support (owner only):** support@airthings.com
+
 ## Contents
 
 - `skills/airthings-air-check/SKILL.md`: reading, thresholds, cooldown, diagnose.

@@ -13,13 +13,28 @@ Needs: env `AIRTHINGS_CLIENT_ID`, `AIRTHINGS_CLIENT_SECRET`; memory rooms + thre
 5. Cooldown in `~/air-watch/state.json` (keys `room|metric`: last alert time + value; no secrets). Report a breach if new, worse than last alert, or past 12h. Clear keys back in range.
 
 Output: breaches (room, metric, value+unit, threshold, one next step). Empty in a routine means send nothing; for a manual ask, one-line all-clear with check time.
-Errors: 401/403 is an auth failure (twice in a row: pause the routine, ask owner to reissue). 429: back off; mention only if repeated.
+Errors: 401/403 is an auth failure (twice in a row: pause the routine, ask owner to reissue). 429: back off; mention only if repeated. On auth or API failures, also check [status.airthings.com/en](https://status.airthings.com/en) before blaming local setup.
 Read-only; no approval needed. Not a CO or smoke alarm.
 
 ## Diagnose
 When the owner says "diagnose": run these checks in order, stop at the first failure, and report it in plain words with a fix. Mask secrets (show only "set" or "missing", never values, tokens, or headers).
 1. Keys present: `AIRTHINGS_CLIENT_ID` and `AIRTHINGS_CLIENT_SECRET` are non-empty. Fail: re-enter through the secure secret request.
-2. Token: the token request returns HTTP 200 with an access token. Report only the HTTP code. 401/403: reissue the client in dashboard.airthings.com.
+2. Token: the token request returns HTTP 200 with an access token. Report only the HTTP code. 401/403: reissue the client in dashboard.airthings.com. If token or later API calls fail, also tell the owner to check [status.airthings.com/en](https://status.airthings.com/en).
 3. Account: `/v1/accounts` returns at least one account. Fail: check the client belongs to the account that owns the monitors.
 4. Devices: for each device, last-seen time from `/v1/accounts/{id}/sensors`. Flag any older than the stale limit as offline (check power, batteries, hub or phone sync).
 All pass: one line per device with last-seen time, then "Diagnose: OK". Output is safe to paste into a public bug report.
+
+## Reference links
+- API getting started: https://consumer-api-doc.airthings.com/docs/api/getting-started
+- API authorization: https://consumer-api-doc.airthings.com/docs/api/authorization
+- API rate limit: https://consumer-api-doc.airthings.com/docs/api/rate-limit
+- API reference: https://consumer-api-doc.airthings.com/api-docs
+- Dashboard (create client): https://dashboard.airthings.com
+- Code examples: https://github.com/airthings
+- Status page: https://status.airthings.com/en
+- Help center: https://help.airthings.com/en/
+- App: https://www.airthings.com/app
+- Home: https://www.airthings.com/
+- Privacy notice: https://www.airthings.com/legal/privacy-notice
+- Terms of use: https://www.airthings.com/legal/terms-of-use
+- Support email (owner-facing only; never email it yourself): support@airthings.com

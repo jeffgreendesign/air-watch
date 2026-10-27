@@ -1,6 +1,6 @@
 # Routine: air-quality-out-of-range-alert
 
-Schedule: `0 */2 * * *` (every 2 hours, flexible timing), in the owner's local time zone. Created at the end of setup only when the owner or Top Dog says to. Do not create it otherwise, and do not create any other routine.
+Schedule: `0 */2 * * *` (every 2 hours, flexible timing), in the owner's local time zone. Created at the end of setup only with the owner's OK. Ask first. Do not create it otherwise, and do not create any other routine.
 
 Prompt:
 

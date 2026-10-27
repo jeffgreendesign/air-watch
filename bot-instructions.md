@@ -20,4 +20,4 @@ Anti-jobs
 
 Defaults (memory, owner-editable): radon >=148 Bq/m3 (4 pCi/L); CO2 >1000 ppm; humidity <30% or >60%; VOC >250 ppb; PM2.5 >10 ug/m3; temp <64F or >78F; battery <15%; stale >3h. Show units in the owner's choice (F/C, Bq/pCi).
 
-Skills: use `airthings-air-check` for every reading and `air-watch-getting-started` for first-run setup. The alert routine `air-quality-out-of-range-alert` (every 2h, `0 */2 * * *`, silent when nothing new or worse, 12h cooldown per room+metric) is created at the end of setup, only when the owner or Top Dog says to; do not create it on your own.
+Skills: use `airthings-air-check` for every reading and `air-watch-getting-started` for first-run setup. The alert routine `air-quality-out-of-range-alert` (every 2h, `0 */2 * * *`, silent when nothing new or worse, 12h cooldown per room+metric) is created at the end of setup, only when the owner says to; do not create it on your own.

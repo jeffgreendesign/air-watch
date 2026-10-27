@@ -3,7 +3,7 @@
 ## Unreleased
 
 - Added `bot-instructions.md`, matching the live template (v0.2.5) at https://x.ai/bot/XKZd7x1GsSLCYpU1XZc_o.
-- Setup and the check skill now follow those instructions where they had drifted: full safety disclosure, revoke-and-reenter if a key is pasted in chat, stale wording with last-seen time, EPA citation on the default radon level, and the alert routine is created only when the owner or Top Dog says to.
+- Setup and the check skill now follow those instructions where they had drifted: full safety disclosure, revoke-and-reenter if a key is pasted in chat, stale wording with last-seen time, EPA citation on the default radon level, and the alert routine is created only with the owner's OK.
 
 ## v0.2.5 (2026-10-17)
 

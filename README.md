@@ -26,7 +26,7 @@ Not a CO or smoke alarm. Bring your own Airthings API client.
 6. Air Watch writes the check script and config to `~/air-watch/` (templates cannot carry files, so the script lives inside the setup skill).
 7. It runs a diagnose, lists your monitors, and asks the room for each.
 8. It takes one reading. An alert may fire right away if something is already out of range.
-9. It asks before creating anything. Only if you say to, it creates the alert routine: every 2 hours in your local time zone. It does not create that routine on its own, and it does not create any other routine.
+9. It asks before creating the alert routine. With your OK, it creates that routine: every 2 hours in your local time zone. It does not create it on its own, and it does not create any other routine.
 
 ## Thresholds (defaults, editable)
 
@@ -112,4 +112,4 @@ Official Airthings links for setup, API docs, status, and support. The bot never
 - `skills/airthings-air-check/SKILL.md`: runs the script and words the results, plus diagnose.
 - `skills/air-watch-getting-started/SKILL.md`: first-run setup; writes the script and config.
 - `bot-instructions.md`: operating instructions, matching the live template.
-- `routine.md`: the alert routine. Created at the end of setup only when you say to.
+- `routine.md`: the alert routine. Created at the end of setup only with your OK.

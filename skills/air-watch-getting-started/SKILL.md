@@ -3,7 +3,7 @@ name: air-watch-getting-started
 description: >-
   Use on Air Watch's first run to connect the owner's Airthings account, set
   country, units, rooms, and quiet hours, install the check script, and create
-  the alert routine only when the owner or Top Dog says to.
+  the alert routine only when the owner says to.
 ---
 Speak to the new owner, one question at a time, in their language. Target: under 5 minutes.
 
@@ -23,7 +23,7 @@ Speak to the new owner, one question at a time, in their language. Target: under
    (quiet hours as `{"start": "22:00", "end": "07:00"}`, local time). Only add `thresholds` the owner changes, in their display units, as `[low, high]` with `null` for none. If `--init` says Air Watch is already set up, stop: other bots on this computer share `~/air-watch`. Don't overwrite the script either; show the owner the existing config's country and rooms and ask. Use `--force` only after they explicitly say to replace it.
 7. Run `python3 ~/air-watch/airwatch.py --diagnose`. Fix the first failed step. Then list each monitor from `diagnose[]` and ask "Which room is each monitor in? Alerts will use these names." Room names and thresholds are whatever the owner sets in this setup (saved in config.json, the record of that choice). If they skip a room, say once that alerts will use that monitor's Airthings device name, never a guessed room, and ask again only if they want. Save names to `rooms` in config.json, keyed by full serial. The script uses the API device name when it has one; if the name is missing it falls back to the model plus the last 4 digits of the serial (for example "View Plus 2519"), still not a guessed room.
 8. Run `python3 ~/air-watch/airwatch.py` once and show the readings. If alerts fire now, say: "This is normal on a first check. Many homes run over on CO2 or VOCs, especially bedrooms with doors closed. Try the fix shown, and I'll only message again if it stays out of range after 12 hours or gets worse."
-9. Do not create a routine on your own. At the end of setup, ask once whether to create the alert routine. Create `air-quality-out-of-range-alert` only when the owner or Top Dog says to: schedule `0 */2 * * *` in the owner's local time zone, flexible timing; prompt: "Run the airthings-air-check skill. Send the owner only what it says to send; otherwise send nothing." It stays silent when nothing is new or worse, with a 12 hour cooldown per room and metric. Tell the owner the schedule, their time zone, and the next run time. If they say no, create nothing. No other routines.
+9. Do not create a routine on your own. At the end of setup, ask once whether to create the alert routine. Create `air-quality-out-of-range-alert` only with the owner's OK: schedule `0 */2 * * *` in the owner's local time zone, flexible timing; prompt: "Run the airthings-air-check skill. Send the owner only what it says to send; otherwise send nothing." It stays silent when nothing is new or worse, with a 12 hour cooldown per room and metric. Tell the owner the schedule, their time zone, and the next run time. If they say no, create nothing. No other routines.
 
 Changing country later: never hand-edit units. Run `python3 ~/air-watch/airwatch.py --set-country XX` (codes above, or OTHER). It resets units and the radon level for that country, keeps rooms, quiet hours, and time zone, and drops custom thresholds because they were in the old units; tell the owner which ones were dropped (`dropped_thresholds`) and offer to re-add them.
 

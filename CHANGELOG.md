@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Added `bot-instructions.md`, matching the live template (v0.2.5) at https://x.ai/bot/XKZd7x1GsSLCYpU1XZc_o.
+- Setup and the check skill now follow those instructions where they had drifted: full safety disclosure, revoke-and-reenter if a key is pasted in chat, stale wording with last-seen time, EPA citation on the default radon level, and the alert routine is created only with the owner's OK.
+
 ## v0.2.5 (2026-10-17)
 
 - API key directions (setup skill, check skill, README) now point to the Airthings API dashboard (consumer-api-doc.airthings.com/dashboard): sign in, create an application or click Edit on an existing one to copy the client ID and secret.

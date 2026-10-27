@@ -2,7 +2,7 @@
 
 Grok Bot template. Read-only watchdog for Airthings monitors. Checks radon, CO2, humidity, VOCs, PM2.5, temperature, battery, and stale data every 2 hours, and messages you only when a room is out of range.
 
-**Add to Grok Bot:** [Install Air Watch](https://x.ai/bot/XKZd7x1GsSLCYpU1XZc_o)
+**Add to Grok Bot:** [Install Air Watch](https://x.ai/bot/XKZd7x1GsSLCYpU1XZc_o) (live template, v0.2.5). The operating instructions for that template are in [bot-instructions.md](bot-instructions.md).
 
 Not a CO or smoke alarm. Bring your own Airthings API client.
 
@@ -20,13 +20,13 @@ Not a CO or smoke alarm. Bring your own Airthings API client.
 
 1. Install the template. Air Watch starts a guided setup, one question at a time.
 2. Get API keys: open the [Airthings API dashboard](https://consumer-api-doc.airthings.com/dashboard) and sign in with your Airthings account. Create an application (new users), or click Edit on an existing one to open a window with the client ID and secret to copy into Air Watch's secure fields (never chat). Flow type Client Credentials, scope `read:device:current_values`. Fallback: the [official getting-started guide](https://consumer-api-doc.airthings.com/docs/api/getting-started).
-3. Enter the client ID and secret through the secure secret fields Air Watch shows you. Never paste them in chat.
+3. Enter the client ID and secret through the secure secret fields Air Watch shows you. Never paste them in chat. If you do, revoke that client and enter a new one through those fields.
 4. Tell Air Watch your country. It sets the radon level and units to match (table below).
 5. Choose quiet hours, or leave them off.
 6. Air Watch writes the check script and config to `~/air-watch/` (templates cannot carry files, so the script lives inside the setup skill).
 7. It runs a diagnose, lists your monitors, and asks the room for each.
 8. It takes one reading. An alert may fire right away if something is already out of range.
-9. It creates the alert routine: every 2 hours in your local time zone.
+9. It asks before creating the alert routine. With your OK, it creates that routine: every 2 hours in your local time zone. It does not create it on its own, and it does not create any other routine.
 
 ## Thresholds (defaults, editable)
 
@@ -111,4 +111,5 @@ Official Airthings links for setup, API docs, status, and support. The bot never
 - `tests/`: fixture tests with a mocked HTTP layer. Run `python3 -m unittest discover -s tests`.
 - `skills/airthings-air-check/SKILL.md`: runs the script and words the results, plus diagnose.
 - `skills/air-watch-getting-started/SKILL.md`: first-run setup; writes the script and config.
-- `routine.md`: the alert routine.
+- `bot-instructions.md`: operating instructions, matching the live template.
+- `routine.md`: the alert routine. Created at the end of setup only with your OK.
